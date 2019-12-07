@@ -70,14 +70,3 @@ class PreDeCon:
                 else:
                     Y[index] = "noise"
         return D, Y
-
-
-if __name__ == "__main__":
-    from scipy.io import arff
-    fName = 'data/iris.arff'
-    tData, meta = arff.loadarff(fName)
-    D = pd.DataFrame(data=tData)
-    Y = D["class"]
-    D = D.drop("class", axis=1)
-    pdc = PreDeCon(0.5, 1, 2, 0.05)
-    result, labels = pdc.fit(D)
