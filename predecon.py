@@ -62,6 +62,11 @@ class PreDeCon:
         return idx
 
     def fit(self, D):
+        """
+        :D: The dataset that should be processed
+        Returns a vector where each point in the input data set is either assigned to a cluster or noise.
+        Each cluster is identified by a unique id.
+        """
         Y = np.full((len(D), 1), np.nan, dtype=np.object)
         for index, row in D.iterrows():
             if pd.isnull(Y[index]) or Y[index] == "noise":
