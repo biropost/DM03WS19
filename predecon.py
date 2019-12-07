@@ -55,7 +55,7 @@ class PreDeCon:
         idx = df[df <= self.e].index
         return idx
 
-    def reachable(self, row, queue, D):
+    def reachable(self, queue, D):
         df = D.copy()
         idx = queue.copy()
         for x in idx:
@@ -72,21 +72,22 @@ class PreDeCon:
         Returns a vector where each point in the input data set is either assigned to a cluster or noise.
         Each cluster is identified by a unique id.
         """
-        Y = np.full((len(D), 1), np.nan, dtype=np.object)
+        assignments = np.full((len(D), 1), np.nan, dtype=np.object)
         for index, row in D.iterrows():
-            if pd.isnull(Y[index]) or Y[index] == "noise":
+            if pd.isnull(assignments[index]) or assignments[index] == "noise":
                 queue, pdim = self.neighbourhood(row, D)
                 if pdim <= self.l and len(queue) >= self.m:
-                    currentID = uuid.uuid4()
+                    current_id = uuid.uuid4()
                     while len(queue) != 0:
-                        q = queue[0]
-                        R = self.reachable(D.iloc[q], queue, D)
+                        R = self.reachable(queue, D)
                         queue = np.delete(queue, 0)
                         for x in R:
-                            if pd.isnull(Y[x]):
+                            if pd.isnull(assignments[x]):
                                 np.append(queue, x)
-                            if pd.isnull(Y[x]) or Y[x] == "noise":
-                                Y[x] = str(currentID)
+                            if pd.isnull(assignments[x]) or assignments[x] == "noise":
+                                assignments[x] = str(current_id)
                 else:
-                    Y[index] = "noise"
-        return D, Y
+                    assignments[index] = "noise"
+        return assignments
+
+
