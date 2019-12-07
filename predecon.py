@@ -10,6 +10,12 @@ class PreDeCon:
     """
 
     def __init__(self, e, m, l, d):
+        """
+        :e: Epsilon - The maximum distance that limits the epsilon-neighborhood of a point (real number)
+        :m: Mu - The minimum number of points in an epsilon neighborhood for a point to be considered a core point (natural number)
+        :l: Lambda - The maximum dimensionality of the searched clusters (natural number)
+        :d: Delta - The maximum variance along one or more attributes (real number)
+        """
         self.e = e
         self.m = m
         self.l = l
