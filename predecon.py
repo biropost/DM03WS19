@@ -4,6 +4,10 @@ import uuid
 
 
 class PreDeCon:
+    """
+    PreDeCon - "subspace PREference weighted DEnsity CONnected clustering"
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.68.5825&rep=rep1&type=pdf
+    """
 
     def __init__(self, e, m, l, d):
         self.e = e
