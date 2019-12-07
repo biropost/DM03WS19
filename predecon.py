@@ -45,6 +45,11 @@ class PreDeCon:
         return idx, pdim
 
     def reachable_getidx(self, row, D):
+        """
+        :row: The Element for which the density reachable elements should be computed
+        :D: The entire data set
+        Returns an index of all elements in D that are density reachable from the given element (=row).
+        """
         df = pd.DataFrame(D.values - row.values, columns=D.columns)
         df = df.apply(np.linalg.norm, axis=1)
         idx = df[df <= self.e].index
