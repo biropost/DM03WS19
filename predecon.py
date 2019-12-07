@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import uuid
+import dataLoader
 
 class PreDeCon:
 
@@ -13,39 +14,37 @@ class PreDeCon:
     def preference_weights(self, row, indexes, D, k):
         df = D.iloc[indexes]
         N = df.shape[0]
-        df.sub(row, axis='columns')
-        df.apply(lambda x: (x**2)/N, axis=1)
-        df.sum(axis=0)
-        df.apply(lambda x: 1 if x > self.d else k)
+        df = df.sub(row, axis='columns')
+        df = df.apply(lambda x: (x**2)/N, axis=1)
+        df = df.sum(axis=0)
+        df = df.apply(lambda x: 1 if x > self.d else k)
         return df.values, df.value_counts()[k]
 
     def neighbourhood(self, row, D):
-        df = D.sub(row, axis='columns')
+        df = pd.DataFrame(D.values - row.values, columns=D.columns)
         distances_pref = df.copy()
-        df.apply(np.linalg.norm, axis=1)
+        df = df.apply(np.linalg.norm, axis=1)
         # the indexes of the e neighborhood
-        idx = df[df >= self.e].index
+        idx = df[df <= self.e].index
         # get the preference weights
         w, pdim = self.preference_weights(row, idx, D, 100)
         # new weighted neighborhood
-        distances_pref.apply(lambda x: (x**2*w).sum()**.5, axis=1)
-        idx = distances_pref[distances_pref >= self.e].index
+        distances_pref = distances_pref.apply(lambda x: ((x**2) * w).sum()**.5, axis=1)
+        idx = distances_pref[distances_pref <= self.e].index
         # returns a list of indexes which are reachable in preferred neighborhood
         return idx, pdim
 
     def reachable_getidx(self, row, D):
-        R = []
-        df = D.sub(row, axis='columns')
-        df.apply(np.linalg.norm, axis=1)
+        df = pd.DataFrame(D.values - row.values, columns=D.columns)
+        df = df.apply(np.linalg.norm, axis=1)
         idx = df[df <= self.e].index
         return idx
 
-    def reachable(self, row, D):
+    def reachable(self, row, queue, D):
         df = D.copy()
-        idx = self.reachable_getidx(row, df)
-        df.drop(idx)
+        idx = queue.copy()
         for x in idx:
-            idx_tmp = self.reachable_getidx(row, df)
+            idx_tmp = self.reachable_getidx(D.iloc[x], df)
             if len(idx_tmp) > 0 :
                 df.drop(idx_tmp)
                 idx.append(idx_tmp)
@@ -53,20 +52,32 @@ class PreDeCon:
         return idx
 
     def fit(self, D):
-        D = pd.DataFrame(data=D)
+        Y = np.full((len(D), 1), np.nan, dtype=np.object)
         for index, row in D.iterrows():
-            if row["label"] == np.nan or row["label"] == "noise":
+            if pd.isnull(Y[index]) or Y[index] == "noise":
                 queue, pdim = self.neighbourhood(row, D)
                 if pdim <= self.l and len(queue) >= self.m:
                     currentID = uuid.uuid4()
                     while len(queue) != 0:
-                        q = queue.pop(0)
-                        R = self.reachable(q, D)
+                        q = queue[0]
+                        R = self.reachable(D.iloc[q], queue, D)
+                        queue = np.delete(queue, 0)
                         for x in R:
-                            if D.iloc["label", x] == np.nan:
-                                queue.append(x)
-                            if D.iloc["label", x] == np.nan or D.iloc["label", x] == "noise":
-                                D.iloc["label", x] = currentID
+                            if pd.isnull(Y[x]):
+                                np.append(queue,x)
+                            if pd.isnull(Y[x]) or Y[x] == "noise":
+                                Y[x] = str(currentID)
                 else:
-                    row["label"] = "noise"
-        return D
+                    Y[index] = "noise"
+        return D, Y
+
+
+if __name__ == "__main__":
+    from scipy.io import arff
+    fName = 'data/iris.arff'
+    tData, meta = arff.loadarff(fName)
+    D = pd.DataFrame(data=tData)
+    Y = D["class"]
+    D = D.drop("class", axis=1)
+    pdc = PreDeCon(0.5, 1, 2, 0.05)
+    result, labels = pdc.fit(D)
