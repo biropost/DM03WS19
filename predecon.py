@@ -25,7 +25,7 @@ class PreDeCon:
         df = D.iloc[indexes]
         N = df.shape[0]
         df = df.sub(row, axis='columns')
-        df = df.apply(lambda x: (x**2)/N, axis=1)
+        df = df.apply(lambda x: (x ** 2) / N, axis=1)
         df = df.sum(axis=0)
         df = df.apply(lambda x: 1 if x > self.d else k)
         return df.values, df.value_counts()[k]
@@ -39,7 +39,7 @@ class PreDeCon:
         # get the preference weights
         w, pdim = self.preference_weights(row, idx, D, 100)
         # new weighted neighborhood
-        distances_pref = distances_pref.apply(lambda x: ((x**2) * w).sum()**.5, axis=1)
+        distances_pref = distances_pref.apply(lambda x: ((x ** 2) * w).sum() ** .5, axis=1)
         idx = distances_pref[distances_pref <= self.e].index
         # returns a list of indexes which are reachable in preferred neighborhood
         return idx, pdim
@@ -55,7 +55,7 @@ class PreDeCon:
         idx = queue.copy()
         for x in idx:
             idx_tmp = self.reachable_getidx(D.iloc[x], df)
-            if len(idx_tmp) > 0 :
+            if len(idx_tmp) > 0:
                 df.drop(idx_tmp)
                 idx.append(idx_tmp)
         # returns a list of indexes which are density reachable
@@ -79,7 +79,7 @@ class PreDeCon:
                         queue = np.delete(queue, 0)
                         for x in R:
                             if pd.isnull(Y[x]):
-                                np.append(queue,x)
+                                np.append(queue, x)
                             if pd.isnull(Y[x]) or Y[x] == "noise":
                                 Y[x] = str(currentID)
                 else:
