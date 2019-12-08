@@ -25,8 +25,8 @@ class PreDeCon:
         df = D.iloc[indexes]
         N = df.shape[0]
         df = df.sub(row, axis='columns')
-        df = df.apply(lambda x: (x ** 2) / N, axis=1)
-        df = df.sum(axis=0)
+        df = df.apply(lambda x: (x ** 2) / N, axis='columns')
+        df = df.sum(axis='rows')
         df = df.apply(lambda x: 1 if x > self.d else k)
         return df.values, df.value_counts()[k]
 
@@ -39,7 +39,7 @@ class PreDeCon:
         # get the preference weights
         w, pdim = self.preference_weights(row, idx, D, 100)
         # new weighted neighborhood
-        distances_pref = distances_pref.apply(lambda x: ((x ** 2) * w).sum() ** .5, axis=1)
+        distances_pref = distances_pref.apply(lambda x: ((x ** 2) * w).sum() ** .5, axis='columns')
         idx = distances_pref[distances_pref <= self.e].index
         # returns a list of indexes which are reachable in preferred neighborhood
         return idx, pdim
@@ -91,5 +91,3 @@ class PreDeCon:
                 else:
                     assignments[index] = "noise"
         return assignments
-
-
