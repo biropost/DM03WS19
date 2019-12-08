@@ -31,6 +31,11 @@ class PreDeCon:
         return df.values, df.value_counts()[k]
 
     def neighbourhood(self, row, D):
+        """
+        :row: The Element for which the preferred-neighborhood-reachable elements should be computed
+        :D: The entire data set
+        Returns a list of indexes which are reachable in the preferred neighborhood
+        """
         df = pd.DataFrame(D.values - row.values, columns=D.columns)
         distances_pref = df.copy()
         df = df.apply(np.linalg.norm, axis=1)
