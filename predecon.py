@@ -56,13 +56,17 @@ class PreDeCon:
         return idx
 
     def reachable(self, queue, D):
+        """
+        :queue: Index of elements in D
+        :D: The data set that should be searched
+        Returns and index of points in D that are density reachable from any point in 'queue'
+        """
         df = D.copy()
         idx = queue.copy()
         for x in idx:
             idx_tmp = self.reachable_getidx(D.iloc[x], df)
             df.drop(idx_tmp)
             idx.append(idx_tmp)
-        # returns a list of indexes which are density reachable
         return idx
 
     def fit(self, D):
