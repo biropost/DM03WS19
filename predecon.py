@@ -28,7 +28,11 @@ class PreDeCon:
         df = df.apply(lambda x: (x ** 2) / N, axis='columns')
         df = df.sum(axis='rows')
         df = df.apply(lambda x: 1 if x > self.d else k)
-        return df.values, df.value_counts()[k]
+
+        if k in df.value_counts():
+            return df.values, df.value_counts()[k]
+
+        return df.values, 0
 
     def neighbourhood(self, row, D):
         """
