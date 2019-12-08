@@ -60,9 +60,8 @@ class PreDeCon:
         idx = queue.copy()
         for x in idx:
             idx_tmp = self.reachable_getidx(D.iloc[x], df)
-            if len(idx_tmp) > 0:
-                df.drop(idx_tmp)
-                idx.append(idx_tmp)
+            df.drop(idx_tmp)
+            idx.append(idx_tmp)
         # returns a list of indexes which are density reachable
         return idx
 
