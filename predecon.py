@@ -51,9 +51,8 @@ class PreDeCon:
         Returns an index of all elements in D that are density reachable from the given element (=row), ie. are in the e-neighborhood.
         """
         df = pd.DataFrame(D.values - row.values, columns=D.columns)
-        df = df.apply(np.linalg.norm, axis=1)
-        idx = df[df <= self.e].index
-        return idx
+        df = df.apply(np.linalg.norm, axis='columns')
+        return df[df <= self.e].index
 
     def reachable(self, queue, D):
         """
