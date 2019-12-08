@@ -36,17 +36,14 @@ class PreDeCon:
         :D: The entire data set
         Returns a list of indexes which are reachable in the preferred neighborhood
         """
-        df = pd.DataFrame(D.values - row.values, columns=D.columns)
-        distances_pref = df.copy()
-        df = df.apply(np.linalg.norm, axis=1)
-        # the indexes of the e neighborhood
-        idx = df[df <= self.e].index
+        # the indexes of the e-neighborhood
+        idx = self.reachable_getidx(row, D)
         # get the preference weights
         w, pdim = self.preference_weights(row, idx, D, 100)
         # new weighted neighborhood
+        distances_pref = pd.DataFrame(D.values - row.values, columns=D.columns)
         distances_pref = distances_pref.apply(lambda x: ((x ** 2) * w).sum() ** .5, axis='columns')
         idx = distances_pref[distances_pref <= self.e].index
-        # returns a list of indexes which are reachable in preferred neighborhood
         return idx, pdim
 
     def reachable_getidx(self, row, D):
