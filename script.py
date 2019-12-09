@@ -1,10 +1,12 @@
-from scipy.io import arff
-import pandas as pd
-import numpy as np
-from predecon import PreDeCon
-import time
-import matplotlib.pyplot as plt
 import itertools
+import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scipy.io import arff
+
+from predecon import PreDeCon
 
 fName = 'data/iris.arff'
 tData, meta = arff.loadarff(fName)
