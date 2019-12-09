@@ -30,6 +30,7 @@ clustered_labels = list(itertools.chain.from_iterable(clustered_labels))
 # 3. Get all unique labels
 
 unique_labels = np.unique(clustered_labels)
+print("Number of Clusters:", len(unique_labels))
 
 # 4. Assign a random color to each unique cluster id
 
