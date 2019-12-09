@@ -1,11 +1,21 @@
 import pandas as pd
 import numpy as np
 import uuid
-import dataLoader
+
 
 class PreDeCon:
+    """
+    PreDeCon - "subspace PREference weighted DEnsity CONnected clustering"
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.68.5825&rep=rep1&type=pdf
+    """
 
     def __init__(self, e, m, l, d):
+        """
+        :e: Epsilon - The maximum distance that limits the epsilon-neighborhood of a point (real number)
+        :m: Mu - The minimum number of points in an epsilon neighborhood for a point to be considered a core point (natural number)
+        :l: Lambda - The maximum dimensionality of the searched clusters (natural number)
+        :d: Delta - The maximum variance along one or more attributes (real number)
+        """
         self.e = e
         self.m = m
         self.l = l
@@ -15,69 +25,75 @@ class PreDeCon:
         df = D.iloc[indexes]
         N = df.shape[0]
         df = df.sub(row, axis='columns')
-        df = df.apply(lambda x: (x**2)/N, axis=1)
-        df = df.sum(axis=0)
+        df = df.apply(lambda x: (x ** 2) / N, axis='columns')
+        df = df.sum(axis='rows')
         df = df.apply(lambda x: 1 if x > self.d else k)
-        return df.values, df.value_counts()[k]
+
+        if k in df.value_counts():
+            return df.values, df.value_counts()[k]
+
+        return df.values, 0
 
     def neighbourhood(self, row, D):
-        df = pd.DataFrame(D.values - row.values, columns=D.columns)
-        distances_pref = df.copy()
-        df = df.apply(np.linalg.norm, axis=1)
-        # the indexes of the e neighborhood
-        idx = df[df <= self.e].index
+        """
+        :row: The Element for which the preferred-neighborhood-reachable elements should be computed
+        :D: The entire data set
+        Returns a list of indexes which are reachable in the preferred neighborhood
+        """
+        # the indexes of the e-neighborhood
+        idx = self.reachable_getidx(row, D)
         # get the preference weights
         w, pdim = self.preference_weights(row, idx, D, 100)
         # new weighted neighborhood
-        distances_pref = distances_pref.apply(lambda x: ((x**2) * w).sum()**.5, axis=1)
+        distances_pref = pd.DataFrame(D.values - row.values, columns=D.columns)
+        distances_pref = distances_pref.apply(lambda x: ((x ** 2) * w).sum() ** .5, axis='columns')
         idx = distances_pref[distances_pref <= self.e].index
-        # returns a list of indexes which are reachable in preferred neighborhood
         return idx, pdim
 
     def reachable_getidx(self, row, D):
+        """
+        :row: The Element for which the density reachable elements should be computed
+        :D: The dataset that should be searched
+        Returns an index of all elements in D that are density reachable from the given element (=row), ie. are in the e-neighborhood.
+        """
         df = pd.DataFrame(D.values - row.values, columns=D.columns)
-        df = df.apply(np.linalg.norm, axis=1)
-        idx = df[df <= self.e].index
-        return idx
+        df = df.apply(np.linalg.norm, axis='columns')
+        return df[df <= self.e].index
 
-    def reachable(self, row, queue, D):
+    def reachable(self, queue, D):
+        """
+        :queue: Index of elements in D
+        :D: The data set that should be searched
+        Returns and index of points in D that are density reachable from any point in 'queue'
+        """
         df = D.copy()
         idx = queue.copy()
         for x in idx:
             idx_tmp = self.reachable_getidx(D.iloc[x], df)
-            if len(idx_tmp) > 0 :
-                df.drop(idx_tmp)
-                idx.append(idx_tmp)
-        # returns a list of indexes which are density reachable
+            df.drop(idx_tmp)
+            idx.append(idx_tmp)
         return idx
 
     def fit(self, D):
-        Y = np.full((len(D), 1), np.nan, dtype=np.object)
+        """
+        :D: The dataset that should be processed
+        Returns a vector where each point in the input data set is either assigned to a cluster or noise.
+        Each cluster is identified by a unique id.
+        """
+        assignments = np.full((len(D), 1), np.nan, dtype=np.object)
         for index, row in D.iterrows():
-            if pd.isnull(Y[index]) or Y[index] == "noise":
+            if pd.isnull(assignments[index]) or assignments[index] == "noise":
                 queue, pdim = self.neighbourhood(row, D)
                 if pdim <= self.l and len(queue) >= self.m:
-                    currentID = uuid.uuid4()
+                    current_id = uuid.uuid4()
                     while len(queue) != 0:
-                        q = queue[0]
-                        R = self.reachable(D.iloc[q], queue, D)
+                        R = self.reachable(queue, D)
                         queue = np.delete(queue, 0)
                         for x in R:
-                            if pd.isnull(Y[x]):
-                                np.append(queue,x)
-                            if pd.isnull(Y[x]) or Y[x] == "noise":
-                                Y[x] = str(currentID)
+                            if pd.isnull(assignments[x]):
+                                np.append(queue, x)
+                            if pd.isnull(assignments[x]) or assignments[x] == "noise":
+                                assignments[x] = str(current_id)
                 else:
-                    Y[index] = "noise"
-        return D, Y
-
-
-if __name__ == "__main__":
-    from scipy.io import arff
-    fName = 'data/iris.arff'
-    tData, meta = arff.loadarff(fName)
-    D = pd.DataFrame(data=tData)
-    Y = D["class"]
-    D = D.drop("class", axis=1)
-    pdc = PreDeCon(0.5, 1, 2, 0.05)
-    result, labels = pdc.fit(D)
+                    assignments[index] = "noise"
+        return assignments
