@@ -25,6 +25,12 @@ class PreDeCon:
         self.k = k
 
     def preference_weights(self, row, indexes, D):
+        """
+        :row: The element for which the preference weights should be computed
+        :indexes: The indexes of D that should be taken into account when calculating the preference weights
+        :D: The data set that should be searched
+        Returns ???
+        """
         df = D.iloc[indexes]
         N = df.shape[0]
         df = df.sub(row, axis='columns')
