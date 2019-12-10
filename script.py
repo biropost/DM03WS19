@@ -56,3 +56,29 @@ for i, name in enumerate(names):
         plt.scatter(x, y, s=30, c=colors, marker="+")
 
 plt.show()
+
+print("Performance Evaluation")
+
+ari = metrics.adjusted_rand_score(true_labels, clustered_labels)
+print(" |- ARI:", ari)
+
+ami = metrics.adjusted_mutual_info_score(true_labels, clustered_labels)
+print(" |- AMI:", ami)
+
+nmi = metrics.normalized_mutual_info_score(true_labels, clustered_labels)
+print(" |- NMI:", nmi)
+
+mi = metrics.mutual_info_score(true_labels, clustered_labels)
+print(" |- MI:", mi)
+
+h = metrics.homogeneity_score(true_labels, clustered_labels)
+print(" |- Homogeneity:", h)
+
+c = metrics.completeness_score(true_labels, clustered_labels)
+print(" |- Completeness:", c)
+
+v = metrics.v_measure_score(true_labels, clustered_labels)
+print(" |- V-Measure:", v)
+
+fmi = metrics.fowlkes_mallows_score(true_labels, clustered_labels)
+print(" |- FMI:", fmi)
