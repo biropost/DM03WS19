@@ -28,8 +28,13 @@ clustered_labels = pdc.fit(D)
 end = time.time()
 print(" |- Runtime:", end - start, "seconds")
 
-unique_labels = np.unique(clustered_labels)
+unique_labels, unique_counts = np.unique(clustered_labels, return_counts=True)
 print(" |- Number of Clusters:", len(unique_labels))
+
+label_counts = dict(zip(unique_labels, unique_counts))
+if "noise" in label_counts:
+    noise_percent = label_counts["noise"] / len(clustered_labels) * 100
+    print(f" |- Noise Points: {label_counts['noise']} ({noise_percent} %)")
 
 print("Preparing Data for Plots...")
 
