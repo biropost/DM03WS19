@@ -22,7 +22,7 @@ print("Clustering Data using PreDeCon...")
 
 start = time.time()
 
-pdc = PreDeCon(e=0.5, m=1, l=2, d=0.05, k=100)
+pdc = PreDeCon(e=2, m=2, l=2, d=0.05, k=100)
 clustered_labels = pdc.fit(D)
 
 end = time.time()
