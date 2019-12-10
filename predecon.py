@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 import uuid
+
+import numpy as np
+import pandas as pd
 
 
 class PreDeCon:
@@ -9,28 +10,30 @@ class PreDeCon:
     http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.68.5825&rep=rep1&type=pdf
     """
 
-    def __init__(self, e, m, l, d):
+    def __init__(self, e, m, l, d, k):
         """
         :e: Epsilon - The maximum distance that limits the epsilon-neighborhood of a point (real number)
         :m: Mu - The minimum number of points in an epsilon neighborhood for a point to be considered a core point (natural number)
         :l: Lambda - The maximum dimensionality of the searched clusters (natural number)
-        :d: Delta - The maximum variance along one or more attributes (real number)
+        :d: Delta - The threshold for small eigenvalues (real number)
+        :k: Kappa - The penalty factor for deviations in preferred dimensions (real number)
         """
         self.e = e
         self.m = m
         self.l = l
         self.d = d
+        self.k = k
 
-    def preference_weights(self, row, indexes, D, k):
+    def preference_weights(self, row, indexes, D):
         df = D.iloc[indexes]
         N = df.shape[0]
         df = df.sub(row, axis='columns')
         df = df.apply(lambda x: (x ** 2) / N, axis='columns')
         df = df.sum(axis='rows')
-        df = df.apply(lambda x: 1 if x > self.d else k)
+        df = df.apply(lambda x: 1 if x > self.d else self.k)
 
-        if k in df.value_counts():
-            return df.values, df.value_counts()[k]
+        if self.k in df.value_counts():
+            return df.values, df.value_counts()[self.k]
 
         return df.values, 0
 
@@ -43,7 +46,7 @@ class PreDeCon:
         # the indexes of the e-neighborhood
         idx = self.reachable_getidx(row, D)
         # get the preference weights
-        w, pdim = self.preference_weights(row, idx, D, 100)
+        w, pdim = self.preference_weights(row, idx, D)
         # new weighted neighborhood
         distances_pref = pd.DataFrame(D.values - row.values, columns=D.columns)
         distances_pref = distances_pref.apply(lambda x: ((x ** 2) * w).sum() ** .5, axis='columns')
